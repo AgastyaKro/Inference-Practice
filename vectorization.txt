@@ -1,0 +1,55 @@
+matmul.cpp:36:13: remark: vectorized loop (vectorization width: 4, interleaved count: 4) [-Rpass=loop-vectorize]
+   36 |             for (int k = 0; k < K; k++){
+      |             ^
+matmul.cpp:63:13: remark: vectorized loop (vectorization width: 4, interleaved count: 4) [-Rpass=loop-vectorize]
+   63 |             for (int c = 0; c < N; c++){
+      |             ^
+matmul.cpp:108:25: remark: vectorized loop (vectorization width: 4, interleaved count: 4) [-Rpass=loop-vectorize]
+  108 |                         for (int c = cS; c < cEnd; c++){
+      |                         ^
+matmul.cpp:144:25: remark: vectorized loop (vectorization width: 4, interleaved count: 4) [-Rpass=loop-vectorize]
+  144 |                         for (int c = cS; c < cEnd; c++){
+      |                         ^
+In file included from matmul.cpp:7:
+In file included from /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/random:1699:
+/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__random/mersenne_twister_engine.h:654:25: remark: loop not vectorized: value that could not be identified as reduction is used outside the loop [-Rpass-analysis=loop-vectorize]
+  654 |     __x_[__i] = (__f * (__x_[__i - 1] ^ __rshift<__w - 2>(__x_[__i - 1])) + __i) & _Max;
+      |                         ^
+/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__random/mersenne_twister_engine.h:653:3: remark: loop not vectorized [-Rpass-missed=loop-vectorize]
+  653 |   for (size_t __i = 1; __i < __n; ++__i)
+      |   ^
+matmul.cpp:162:5: remark: loop not vectorized: value that could not be identified as reduction is used outside the loop [-Rpass-analysis=loop-vectorize]
+  162 |     for (float& value : A) {
+      |     ^
+In file included from matmul.cpp:7:
+In file included from /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/random:1699:
+/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__random/mersenne_twister_engine.h:740:31: remark: loop not vectorized: cannot identify array bounds [-Rpass-analysis=loop-vectorize]
+  740 |   const result_type __yp   = (__x_[__i_] & ~__mask) | (__x_[__j] & __mask);
+      |                               ^
+matmul.cpp:162:5: remark: loop not vectorized [-Rpass-missed=loop-vectorize]
+  162 |     for (float& value : A) {
+      |     ^
+matmul.cpp:179:5: remark: loop not vectorized: value that could not be identified as reduction is used outside the loop [-Rpass-analysis=loop-vectorize]
+  179 |     for (size_t i = 0; i < expected.size(); i++) {
+      |     ^
+matmul.cpp:179:5: remark: loop not vectorized [-Rpass-missed=loop-vectorize]
+matmul.cpp:144:25: remark: vectorized loop (vectorization width: 4, interleaved count: 4) [-Rpass=loop-vectorize]
+  144 |                         for (int c = cS; c < cEnd; c++){
+      |                         ^
+matmul.cpp:144:25: remark: vectorized loop (vectorization width: 4, interleaved count: 4) [-Rpass=loop-vectorize]
+matmul.cpp:144:25: remark: vectorized loop (vectorization width: 4, interleaved count: 4) [-Rpass=loop-vectorize]
+matmul.cpp:144:25: remark: vectorized loop (vectorization width: 4, interleaved count: 4) [-Rpass=loop-vectorize]
+matmul.cpp:144:25: remark: vectorized loop (vectorization width: 4, interleaved count: 4) [-Rpass=loop-vectorize]
+matmul.cpp:108:25: remark: vectorized loop (vectorization width: 4, interleaved count: 4) [-Rpass=loop-vectorize]
+  108 |                         for (int c = cS; c < cEnd; c++){
+      |                         ^
+matmul.cpp:108:25: remark: vectorized loop (vectorization width: 4, interleaved count: 4) [-Rpass=loop-vectorize]
+matmul.cpp:108:25: remark: vectorized loop (vectorization width: 4, interleaved count: 4) [-Rpass=loop-vectorize]
+matmul.cpp:108:25: remark: vectorized loop (vectorization width: 4, interleaved count: 4) [-Rpass=loop-vectorize]
+matmul.cpp:108:25: remark: vectorized loop (vectorization width: 4, interleaved count: 4) [-Rpass=loop-vectorize]
+matmul.cpp:144:25: remark: vectorized loop (vectorization width: 4, interleaved count: 4) [-Rpass=loop-vectorize]
+  144 |                         for (int c = cS; c < cEnd; c++){
+      |                         ^
+matmul.cpp:108:25: remark: vectorized loop (vectorization width: 4, interleaved count: 4) [-Rpass=loop-vectorize]
+  108 |                         for (int c = cS; c < cEnd; c++){
+      |                         ^

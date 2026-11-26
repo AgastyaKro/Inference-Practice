@@ -1,0 +1,173 @@
+matmul.cpp, 2026-11-23
+
+Benchmark results
+
+Measured on arm64 macOS 26.6.2 with Apple Clang 17.0.0.
+Built with clang++ -std=c++17 -O3 matmul.cpp -o matmul.
+Each pass uses one warm-up and five timed calls per configuration.
+Mean ms averages the two pass means. GFLOP/s uses 2 × M × K × N
+divided by the mean runtime and converted to billions of FLOPs per second.
+Timing includes output allocation and initialization. Input generation and
+correctness checks run outside the timed region.
+
+Loop order refers to the outer tile loops for tiled kernels. Both tiled
+kernels use i-k-j inside each tile. i is row, j is column, and k is the
+shared dimension.
+A-tile reuse keeps A's (i, k) tile fixed while visiting column tiles j.
+Output-tile accumulation completes C's (i, j) tile across all k tiles.
+
+512 × 512
+
+Fastest overall was Reordered (i-k-j), 13.030 ms, 20.60 GFLOP/s.
+Fastest tiled mean was A-tile reuse (i-k-j, block 128), 13.782 ms, 19.48 GFLOP/s.
+The next fastest tiled configuration was 0.62% slower.
+Best block per tiled order was 128 for A-tile reuse and 128 for Output-tile accumulation.
+Pass 1 favored A-tile reuse at block 128. Pass 2 favored A-tile reuse at block 128.
+Maximum absolute error versus naive was 0.00e+00 across both passes.
+
+Implementation            Loop order Block    Pass 1 ms    Pass 2 ms      Mean ms   GFLOP/s
+Naive                     i-j-k          —      175.016      187.589      181.303      1.48
+Reordered                 i-k-j          —       12.912       13.148       13.030     20.60
+A-tile reuse              i-k-j          8       94.475      106.298      100.386      2.67
+Output-tile accumulation  i-j-k          8       94.404      105.442       99.923      2.69
+A-tile reuse              i-k-j         16       25.177       25.285       25.231     10.64
+Output-tile accumulation  i-j-k         16       25.114       24.993       25.053     10.71
+A-tile reuse              i-k-j         32       20.548       20.537       20.542     13.07
+Output-tile accumulation  i-j-k         32       20.633       22.125       21.379     12.56
+A-tile reuse              i-k-j         64       15.054       15.176       15.115     17.76
+Output-tile accumulation  i-j-k         64       15.037       15.181       15.109     17.77
+A-tile reuse              i-k-j        128       13.689       13.875       13.782     19.48
+Output-tile accumulation  i-j-k        128       13.699       14.037       13.868     19.36
+A-tile reuse              i-k-j        256       14.162       14.318       14.240     18.85
+Output-tile accumulation  i-j-k        256       14.157       14.411       14.284     18.79
+
+1024 × 1024
+
+Fastest overall was Reordered (i-k-j), 103.515 ms, 20.75 GFLOP/s.
+Fastest tiled mean was A-tile reuse (i-k-j, block 256), 116.684 ms, 18.40 GFLOP/s.
+The next fastest tiled configuration was 0.04% slower.
+Best block per tiled order was 256 for A-tile reuse and 256 for Output-tile accumulation.
+Pass 1 favored Output-tile accumulation at block 256. Pass 2 favored A-tile reuse at block 256.
+Maximum absolute error versus naive was 0.00e+00 across both passes.
+
+Implementation            Loop order Block    Pass 1 ms    Pass 2 ms      Mean ms   GFLOP/s
+Naive                     i-j-k          —     1514.200     1531.796     1522.998      1.41
+Reordered                 i-k-j          —      103.286      103.744      103.515     20.75
+A-tile reuse              i-k-j          8      761.236      766.020      763.628      2.81
+Output-tile accumulation  i-j-k          8      775.895      781.243      778.569      2.76
+A-tile reuse              i-k-j         16      211.475      211.778      211.626     10.15
+Output-tile accumulation  i-j-k         16      233.809      233.841      233.825      9.18
+A-tile reuse              i-k-j         32      181.031      183.770      182.401     11.77
+Output-tile accumulation  i-j-k         32      182.716      182.396      182.556     11.76
+A-tile reuse              i-k-j         64      146.568      145.645      146.107     14.70
+Output-tile accumulation  i-j-k         64      145.235      151.347      148.291     14.48
+A-tile reuse              i-k-j        128      125.623      126.256      125.940     17.05
+Output-tile accumulation  i-j-k        128      125.645      125.983      125.814     17.07
+A-tile reuse              i-k-j        256      116.658      116.710      116.684     18.40
+Output-tile accumulation  i-j-k        256      116.581      116.886      116.733     18.40
+
+Large-matrix blocking experiment
+
+Measured with the existing kernels on arm64 using Apple Clang 17.0.0
+with -std=c++17 -O3. B occupied 16 MiB at 2048 and 64 MiB at 4096.
+Each size began with an untimed reordered run that warmed up the kernel
+and produced the reference. Nine reference entries were verified using
+double-precision dot products. Each timed result was compared against the
+full reference outside the timed region. Timing includes output allocation
+and initialization. GFLOP/s counts 2 × M × K × N FLOPs.
+
+Each configuration was timed once during the sweep. Block sizes increased
+from 32 to a full-size tile in powers of two. The reordered baseline and
+the two finalists were then timed twice more, with the order reversed for
+the second confirmation run. At 2048 the finalists were the fastest tiled
+configurations, including the full-size control. At 4096 the finalists were
+the fastest multi-tile configurations, with full-size tiles as controls.
+
+2048 × 2048
+
+Fastest multi-tile sweep result was A-tile reuse at block 1024,
+922.316 ms versus 832.758 ms for reordered.
+Maximum absolute error versus the reference was 0.00e+00.
+
+Sweep
+
+Implementation              Block  Runtime (ms)   GFLOP/s
+Reordered                       —       832.758     20.63
+A-tile reuse                   32      1795.713      9.57
+Output-tile accumulation       32      1808.550      9.50
+A-tile reuse                   64      1410.209     12.18
+Output-tile accumulation       64      1414.522     12.15
+A-tile reuse                  128      1138.143     15.09
+Output-tile accumulation      128      1145.268     15.00
+A-tile reuse                  256      1035.718     16.59
+Output-tile accumulation      256      1025.185     16.76
+A-tile reuse                  512      1019.105     16.86
+Output-tile accumulation      512      1024.925     16.76
+A-tile reuse                 1024       922.316     18.63
+Output-tile accumulation     1024       928.800     18.50
+A-tile reuse                 2048       838.729     20.48
+Output-tile accumulation     2048       832.335     20.64
+
+Confirmation runs
+
+Implementation              Block   Run 1 (ms)   Run 2 (ms)    Mean (ms)   GFLOP/s  vs. baseline
+Reordered                       —      826.862      824.255      825.559     20.81        +0.00%
+A-tile reuse                 2048      847.482      830.914      839.198     20.47        +1.65%
+Output-tile accumulation     2048      852.300      836.476      844.388     20.35        +2.28%
+
+4096 × 4096
+
+Fastest multi-tile sweep result was A-tile reuse at block 512,
+8309.037 ms versus 6747.027 ms for reordered.
+Maximum absolute error versus the reference was 0.00e+00.
+
+Sweep
+
+Implementation              Block  Runtime (ms)   GFLOP/s
+Reordered                       —      6747.027     20.37
+A-tile reuse                   32     14314.395      9.60
+Output-tile accumulation       32     16816.943      8.17
+A-tile reuse                   64     10525.708     13.06
+Output-tile accumulation       64     11827.691     11.62
+A-tile reuse                  128      8400.380     16.36
+Output-tile accumulation      128      8789.107     15.64
+A-tile reuse                  256      8692.872     15.81
+Output-tile accumulation      256      8810.011     15.60
+A-tile reuse                  512      8309.037     16.54
+Output-tile accumulation      512      8407.202     16.35
+A-tile reuse                 1024      9927.057     13.84
+Output-tile accumulation     1024     10264.146     13.39
+A-tile reuse                 2048     12752.479     10.78
+Output-tile accumulation     2048     13195.986     10.42
+A-tile reuse                 4096      6990.340     19.66
+Output-tile accumulation     4096      6699.284     20.52
+
+Confirmation runs
+
+Implementation              Block   Run 1 (ms)   Run 2 (ms)    Mean (ms)   GFLOP/s  vs. baseline
+Reordered                       —     6716.350     6666.190     6691.270     20.54        +0.00%
+A-tile reuse                  512     8350.482     8310.236     8330.359     16.50       +24.50%
+Output-tile accumulation      512     8392.001     8400.467     8396.234     16.37       +25.48%
+
+The reordered kernel beat every multi-tile configuration at both sizes.
+The fastest full-size tile was within 1% of reordered in each sweep.
+The 4096 confirmation runs reproduced the slowdown for both loop orders.
+
+Four-row B reuse (matmul_multirow)
+
+Measured the current kernel on arm64 with Apple Clang 17.0.0 and
+-std=c++17 -O3. Each kernel used the existing benchmark helper with one
+warm-up and five timed calls on the same inputs. All row counts were
+divisible by four. Reordered was timed again for this comparison.
+
+Correctness was checked against the naive kernel at 512 and 1024, and
+against reordered at 2048 and 4096. Nine entries of each reference were
+verified with double-precision dot products. Input generation and
+correctness checks ran outside the timed region. Speedup is reordered
+mean runtime divided by multirow mean runtime.
+
+Matrix size   Reordered ms  Reordered GFLOP/s   Multirow ms  Multirow GFLOP/s   Speedup    Max error
+512 × 512           12.964              20.71        10.929             24.56     1.19×     0.00e+00
+1024 × 1024        111.076              19.33        88.216             24.34     1.26×     0.00e+00
+2048 × 2048        914.417              18.79       692.879             24.79     1.32×     0.00e+00
+4096 × 4096       6855.059              20.05      5403.213             25.44     1.27×     0.00e+00

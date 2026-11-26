@@ -1,0 +1,51 @@
+matmul.cpp, 2026-11-24
+
+Multi-row B reuse experiment (matmul_multirow)
+
+Apple Clang 17.0.0 on arm64, compiled with -std=c++17 -O3.
+One row uses the existing untiled reordered kernel. Row counts 2, 4,
+8, and 16 use the same template with fixed row counts and sequential
+column iteration. Each configuration had one warm-up, then five timed
+runs at 1024 and 2048 or three at 4096. Trial order alternated forward
+and reverse. The trials used the same seeded FP32 inputs and included
+output allocation and initialization. Correctness checks were untimed.
+
+The 4096 finalists were selected by geometric mean of speedups at
+1024 and 2048. Active C is the storage spanned by the output rows
+being updated. It is calculated as rows × columns × 4 bytes.
+GFLOP/s uses 2 × M × K × N divided by the mean runtime.
+
+The 1024 reference used naive multiplication. The 2048 and 4096
+references used reordered multiplication and were independently
+checked at nine positions using double-precision dot products.
+
+Matrix size   Rows Active C KiB Trials      Mean ms       Min ms       Max ms   GFLOP/s  Speedup  Max error
+1024 × 1024      1            4      5      107.063      103.733      119.379     20.06    1.00×   0.00e+00
+1024 × 1024      2            8      5       89.793       89.509       90.503     23.92    1.19×   0.00e+00
+1024 × 1024      4           16      5       85.445       85.287       85.588     25.13    1.25×   0.00e+00
+1024 × 1024      8           32      5       88.612       87.469       89.431     24.23    1.21×   0.00e+00
+1024 × 1024     16           64      5      379.620      378.819      380.255      5.66    0.28×   0.00e+00
+2048 × 2048      1            8      5      844.875      825.316      911.486     20.33    1.00×   0.00e+00
+2048 × 2048      2           16      5      730.892      724.739      742.755     23.51    1.16×   0.00e+00
+2048 × 2048      4           32      5      680.471      677.476      682.797     25.25    1.24×   0.00e+00
+2048 × 2048      8           64      5      713.163      709.187      721.281     24.09    1.18×   0.00e+00
+2048 × 2048     16          128      5    11207.512    10771.217    11365.191      1.53    0.08×   0.00e+00
+4096 × 4096      1           16      3     6685.750     6662.357     6705.125     20.56    1.00×   0.00e+00
+4096 × 4096      4           64      3     5271.569     5268.440     5274.783     26.07    1.27×   0.00e+00
+4096 × 4096      8          128      3     9501.513     9481.750     9520.782     14.46    0.70×   0.00e+00
+
+Fastest tested row counts
+
+1024 × 1024 favored 4 rows at 85.445 ms and 1.25× the one-row throughput.
+2048 × 2048 favored 4 rows at 680.471 ms and 1.24× the one-row throughput.
+4096 × 4096 favored 4 rows at 5271.569 ms and 1.27× the one-row throughput.
+
+Compiler remarks and optimized IR from the benchmark build showed
+four-wide vector operations in the full-group column loops for 2, 4,
+and 8 rows. Clang could not prove it was safe to reorder memory
+operations in the 16-row loop, which used scalar output updates.
+The changing working set and the change in generated code both
+affect this comparison.
+
+At 4096 columns, 4 active rows span 64 KiB of C and 8 span 128 KiB.
+The 8-row result took 42.1% longer than reordered at that size.
